@@ -1,11 +1,13 @@
 {
-  "name": "shongo-calendar",
+  "name": "@michaldrobnak/shongo-calendar",
   "version": "15.0.0",
   "peerDependencies": {
     "@angular/common": "^15.0.0",
     "@angular/core": "^15.0.0",
     "angular-calendar": "^0.31.0",
-    "moment": "^2.29.4",
+    "moment": "^2.29.4"
+  },
+  "dependencies": {
     "tslib": "^2.3.0"
   }
 }

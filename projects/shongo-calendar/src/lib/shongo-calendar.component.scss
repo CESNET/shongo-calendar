@@ -1,6 +1,14 @@
 .shongo-calendar {
-  --calendar-primary: var(--shongo-calendar-primary, rgb(0, 200, 83));
+  --calendar-primary: var(--shongo-calendar-primary, rgb(0 200 83));
+
   position: relative;
+
+  &__title,
+  &__time {
+    user-select: none;
+    pointer-events: none;
+    touch-action: none;
+  }
 
   &__overlay {
     display: flex;
@@ -11,8 +19,8 @@
     height: 100%;
     background: linear-gradient(
       0deg,
-      rgba(245, 245, 245, 0.6) 0%,
-      rgba(255, 255, 255, 0.6) 100%
+      rgb(245 245 245 / 60%) 0%,
+      rgb(255 255 255 / 60%) 100%
     );
     top: 0;
     left: 0;
@@ -40,9 +48,11 @@
       &:nth-child(1) {
         animation-delay: -0.45s;
       }
+
       &:nth-child(2) {
         animation-delay: -0.3s;
       }
+
       &:nth-child(3) {
         animation-delay: -0.15s;
       }
@@ -52,41 +62,35 @@
       0% {
         transform: rotate(0deg);
       }
+
       100% {
         transform: rotate(360deg);
       }
     }
   }
 
-  &__tooltip > .cal-tooltip-inner {
-    display: flex;
-    flex-direction: column;
-    justify-content: left;
-    text-align: left;
-    max-width: none;
-    font-size: 0.9rem;
+  &__tooltip {
+    > .cal-tooltip-inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: left;
+      text-align: left;
+      max-width: none;
+      font-size: 0.8rem;
 
-    a {
-      color: var(--calendar-primary);
+      a {
+        color: var(--calendar-primary);
+      }
+    }
+  }
+
+  &__event {
+    &--white {
+      .shongo-calendar {
+        &__title {
+          color: white;
+        }
+      }
     }
   }
 }
-
-.shongo-calendar__event {
-  &--white {
-    .shongo-calendar__title {
-      color: white;
-    }
-  }
-}
-
-// // Disables touch actions for event element, used to preven errors when resizing/dragging event on mobile.
-// .cal-event-container,
-// .cal-resize-handle {
-//   touch-action: none;
-// }
-
-// // Prevents selection of times in calendar, avoids selecting times when creating event with mousemove.
-// .cal-time {
-//   user-select: none;
-// }

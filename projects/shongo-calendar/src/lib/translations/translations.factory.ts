@@ -1,6 +1,6 @@
-import { ICalendarTranslations } from "../models/interfaces";
-import { DEFAULT_TRANSLATIONS } from "./translations.default";
+import { ICalendarTranslations } from '../models/interfaces';
+import { DEFAULT_TRANSLATIONS } from './translations.default';
 
 export const translationsFactory = (translations?: ICalendarTranslations) => {
-    return translations ? translations : DEFAULT_TRANSLATIONS;
-  };
+  return translations ? translations : DEFAULT_TRANSLATIONS;
+};

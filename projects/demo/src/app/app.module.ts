@@ -1,19 +1,19 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { ShongoCalendarModule } from 'projects/shongo-calendar/src/public-api';
-
+import { ShongoCalendarModule } from '@michaldrobnak/shongo-calendar';
+import { MOMENT } from 'angular-calendar';
+import moment from 'moment';
 import { AppComponent } from './app.component';
-import * as moment from 'moment';
 
 @NgModule({
-  declarations: [
-    AppComponent
+  declarations: [AppComponent],
+  imports: [BrowserModule, ShongoCalendarModule.forRoot()],
+  providers: [
+    {
+      provide: MOMENT,
+      useValue: moment,
+    },
   ],
-  imports: [
-    BrowserModule,
-    ShongoCalendarModule.forRoot({ moment })
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

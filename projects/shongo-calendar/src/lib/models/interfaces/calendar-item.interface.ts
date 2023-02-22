@@ -1,8 +1,9 @@
-import { IInterval } from "./interval.interface";
-import { IOwner } from "./owner.interface";
+import { IEventOwner } from './event-owner.interface';
+import { IInterval } from './interval.interface';
 
 export interface ICalendarItem {
-    slot: IInterval;
-    owner: IOwner;
-    title: string;
+  slot: IInterval;
+  owner: IEventOwner;
+  title: string;
+  data?: Record<string, unknown>;
 }

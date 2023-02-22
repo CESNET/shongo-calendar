@@ -1,15 +1,33 @@
 {
-  "name": "shongo-calendar",
+  "name": "@michaldrobnak/shongo-calendar",
   "version": "15.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MichalDrobnak/shongo-calendar"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "dist/shongo-calendar"
+  ],
+  "main": "dist/shongo-calendar",
   "scripts": {
     "ng": "ng",
     "start": "ng serve demo",
-    "build": "ng build",
+    "build:clean": "rm -rf dist",
+    "build:lib": "ng build shongo-calendar --configuration=production",
+    "release": "npm publish",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test demo",
+    "lint": "eslint ./projects/**/*.ts --fix",
+    "format": "prettier ./projects/**/*.ts --write",
+    "format-css": "stylelint ./projects/**/*.scss --fix"
   },
-  "private": true,
   "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
     "@angular/animations": "^15.0.0",
     "@angular/common": "^15.0.0",
     "@angular/compiler": "^15.0.0",
@@ -21,14 +39,20 @@
     "angular-calendar": "^0.31.0",
     "moment": "^2.29.4",
     "rxjs": "~7.5.0",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.12.0"
-  },
-  "devDependencies": {
+    "zone.js": "~0.12.0",
+    "bootstrap": "^5.3.0-alpha1",
     "@angular-devkit/build-angular": "^15.0.5",
+    "@angular-eslint/builder": "15.2.1",
+    "@angular-eslint/eslint-plugin": "15.2.1",
+    "@angular-eslint/eslint-plugin-template": "15.2.1",
+    "@angular-eslint/schematics": "15.2.1",
+    "@angular-eslint/template-parser": "15.2.1",
     "@angular/cli": "~15.0.4",
     "@angular/compiler-cli": "^15.0.0",
     "@types/jasmine": "~4.3.0",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "eslint": "^8.33.0",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -36,6 +60,10 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "ng-packagr": "^15.0.0",
+    "prettier-plugin-organize-imports": "^3.2.2",
+    "stylelint": "^15.2.0",
+    "stylelint-config-standard": "^30.0.1",
+    "stylelint-config-standard-scss": "^7.0.1",
     "typescript": "~4.8.2"
   }
 }

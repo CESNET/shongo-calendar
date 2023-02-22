@@ -7,46 +7,25 @@ import {
   Input,
   OnInit,
   Output,
-  ViewEncapsulation,
 } from '@angular/core';
-import {
-  CalendarEvent,
-  CalendarEventTimesChangedEvent,
-  CalendarView,
-} from 'angular-calendar';
+import { CalendarEventTimesChangedEvent, CalendarView } from 'angular-calendar';
 import { WeekViewHourSegment } from 'calendar-utils';
-import * as moment from 'moment';
+import moment from 'moment';
 import { BehaviorSubject, fromEvent, Observable, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
-import { ICalendarItem, IInterval, IOwner } from './models/interfaces';
-import { ICalendarTranslations } from './models/interfaces/calendar-translations.interface';
+import { COLORS } from './data';
+import { ICalendarItem, IEventOwner, IInterval } from './models/interfaces';
+import { TShongoCalendarEvent, TWeekStart } from './models/types';
 import { TranslationPipe } from './pipes/translation.pipe';
+import { ceilToNearest } from './utils/ceil-to-nearest.util';
+import { floorToNearest } from './utils/floor-to-nearest.util';
 
-type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-function floorToNearest(amount: number, precision: number) {
-  return Math.floor(amount / precision) * precision;
-}
-
-function ceilToNearest(amount: number, precision: number) {
-  return Math.ceil(amount / precision) * precision;
-}
-
-const COLORS = {
-  owned: {
-    primary: '#f26161',
-    secondary: '#ffb0b0',
-  },
-  created: {
-    primary: '#84db87',
-    secondary: '#cfffd1',
-  },
-  default: {
-    primary: '#6daded',
-    secondary: '#c9e4ff',
-  },
-};
-
+/**
+ * Calendar component that displays events and allows creating new ones.
+ * Customized specificaly for Shongo.
+ *
+ * @author Michal Drobňák
+ */
 @Component({
   selector: 'shongo-calendar',
   templateUrl: './shongo-calendar.component.html',
@@ -63,69 +42,155 @@ const COLORS = {
   ],
 })
 export class ShongoCalendarComponent implements OnInit {
+  /**
+   * Emits selected slot on drag selection.
+   */
   @Output() slotSelected = new EventEmitter<IInterval | null>();
-  @Output() loadData = new EventEmitter<IInterval>();
-  @Output() eventClicked = new EventEmitter<CalendarEvent>();
 
   /**
-   * Allows selecting time slots in calendar (default = false).
+   * Emits event when view interval changes and needs to be re-fetched.
+   */
+  @Output() loadData = new EventEmitter<IInterval>();
+
+  /**
+   * Emits calendar event when user clicks on it.
+   */
+  @Output() itemClicked = new EventEmitter<ICalendarItem>();
+
+  /**
+   * Two way binding of view.
+   */
+  @Output() viewChange = new EventEmitter<CalendarView>();
+
+  /**
+   * Two way binding of view date.
+   */
+  @Output() viewDateChange = new EventEmitter<Date>();
+
+  /**
+   * Allows selecting time slots in calendar.
+   *
+   * @default false
    */
   @Input() allowSlotSelection = false;
+
+  /**
+   * Displays loading spinner.
+   *
+   * @default false
+   */
   @Input() loading = false;
-  @Input() translations?: ICalendarTranslations;
-  @Input() owner?: IOwner;
+
+  /**
+   * Current user that is creating reservations.
+   */
+  @Input() currentUser?: IEventOwner;
 
   /**
    * If true, calendar will highlight all reservations that belong to the current user.
    */
-  @Input() set highlightUsersReservations(value: boolean) {
-    this._highlightUsersReservations = value;
-    this._onHighlightChange();
-  }
+  @Input()
   get highlightUsersReservations(): boolean {
     return this._highlightUsersReservations;
+  }
+  set highlightUsersReservations(value: boolean) {
+    this._highlightUsersReservations = value;
+    this._onHighlightChange();
   }
 
   /**
    * Currently displayed date.
    */
-  @Input() set viewDate(value: Date) {
-    this._viewDate = value;
-    this.handleViewOrDateChange();
-    this._cd.detectChanges();
-  }
+  @Input()
   get viewDate(): Date {
     return this._viewDate;
+  }
+  set viewDate(value: Date) {
+    this._viewDate = value;
+    this._handleViewOrDateChange();
+    this._cd.markForCheck();
   }
 
   /**
    * Current calendar view (day, week, month).
    */
-  @Input() set view(value: CalendarView) {
-    this._view = value;
-    this.handleViewOrDateChange();
-    this._cd.detectChanges();
-  }
+  @Input()
   get view(): CalendarView {
     return this._view;
   }
-
-  get displayedInterval(): IInterval {
-    return this._getInterval(this.viewDate);
+  set view(value: CalendarView) {
+    this._view = value;
+    this._handleViewOrDateChange();
+    this._cd.markForCheck();
   }
 
-  readonly refresh$ = new Subject<void>();
-  readonly weekStartsOn: WeekStartsOn = 0;
-  readonly CalendarView = CalendarView;
+  /**
+   * Calendar items to display.
+   */
+  @Input()
+  get items(): ICalendarItem[] {
+    return this._items;
+  }
+  set items(items: ICalendarItem[]) {
+    this._items = items;
+    this._events = this._createEvents(items);
 
-  private _events: CalendarEvent[] = [];
-  private _createdEvent?: CalendarEvent;
+    if (this._createdEvent) {
+      this._events.push(this._createdEvent);
+    }
+  }
+
+  /**
+   * Used to refresh calendar when items change. Used as an input to angular-calendar views.
+   */
+  readonly refresh$ = new Subject<void>();
+
+  /**
+   * Emits true while user is dragging to create an event.
+   */
+  readonly isDragging$ = new BehaviorSubject(false);
+
+  /**
+   * Defines start of the week in the week and month views. 0 = Sunday, 1 = Monday, etc.
+   */
+  readonly weekStartsOn: TWeekStart = 0;
+
+  /**
+   * Items coming from the parent app.
+   */
+  private _items: ICalendarItem[] = [];
+
+  /**
+   * Calendar events from angular-calendar (they wrap calendar items).
+   */
+  private _events: TShongoCalendarEvent[] = [];
+
+  /**
+   * Event that is created when user selects a time slot.
+   */
+  private _createdEvent?: TShongoCalendarEvent;
+
+  /**
+   * If true, calendar will highlight all reservations that belong to the current user.
+   */
   private _highlightUsersReservations = false;
-  private _viewDate = moment().toDate();
+
+  /**
+   * Current calendar view (day, week, month).
+   */
   private _view = CalendarView.Month;
+
+  /**
+   * Interval of the last fetched data.
+   */
   private _lastFetchedInterval?: IInterval;
 
-  private readonly _loading$ = new BehaviorSubject<boolean>(false);
+  /**
+   * Currently displayed date.
+   */
+  private _viewDate = moment().toDate();
+
+  readonly CalendarView = CalendarView;
 
   constructor(
     private _cd: ChangeDetectorRef,
@@ -133,20 +198,18 @@ export class ShongoCalendarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this._requestData();
+    this._handleViewOrDateChange();
   }
 
-  get events(): CalendarEvent[] {
-    return this._events;
-  }
-
+  /**
+   * Currently selected time slot.
+   */
   get selectedSlot(): IInterval | undefined {
     if (this._createdEvent && this._createdEvent.end) {
       return { start: this._createdEvent.start, end: this._createdEvent.end };
     }
     return undefined;
   }
-
   set selectedSlot(slot: IInterval | undefined) {
     if (!slot) {
       this._events = this._events.filter((evt) => evt !== this._createdEvent);
@@ -157,44 +220,25 @@ export class ShongoCalendarComponent implements OnInit {
       this._createdEvent = this._createSelectedSlotEvent(slot.start, slot.end);
       this._events.push(this._createdEvent);
     }
-
-    this.refresh$.next();
+    this._refreshCalendar();
   }
 
   /**
-   * Fetches reservations on view or date change.
-   *
-   * Checks if new displayed interval is a sub-interval of previously
-   * fetched interval and only re-fetches if not.
-   */
-  handleViewOrDateChange(): void {
-    const interval = this._getInterval(this.viewDate);
-
-    if (
-      !this._lastFetchedInterval ||
-      !this._isSubInterval(this._lastFetchedInterval, interval)
-    ) {
-      this._requestData();
-    }
-  }
-
-  /**
-   * Refreshes data.
-   */
-  refresh(): void {
-    this._loading$.next(true);
-    setTimeout(() => this._requestData(), 200);
-  }
-
-  /**
-   * Opens date on click.
+   * Changes view to day and selects a given date.
+   * Used for date navigation from week or month view.
    *
    * @param date Clicked date.
+   * @fires viewChange
+   * @fires viewDateChange
    */
-  openDate(date: Date): void {
+  selectDate(date: Date): void {
     this._viewDate = date;
     this._view = CalendarView.Day;
-    this.handleViewOrDateChange();
+
+    this.viewChange.emit(this._view);
+    this.viewDateChange.emit(this._viewDate);
+
+    this._handleViewOrDateChange();
     this._cd.detectChanges();
   }
 
@@ -206,20 +250,21 @@ export class ShongoCalendarComponent implements OnInit {
    */
   startDragToCreate(segment: WeekViewHourSegment, segmentElement: HTMLElement) {
     const prevCreatedEvent = this._createdEvent;
+    this.isDragging$.next(true);
+
     this._createdEvent = this._createSelectedSlotEvent(segment.date);
 
     this._events = this._events
       .filter((event) => event !== prevCreatedEvent)
       .concat([this._createdEvent]);
-    this.slotSelected.emit(this.selectedSlot);
 
     const segmentPosition = segmentElement.getBoundingClientRect();
 
     (fromEvent(document, 'mousemove') as Observable<MouseEvent>)
       .pipe(
         finalize(() => {
-          delete this._createdEvent!.meta.tmpEvent;
-          this.refresh$.next();
+          this.slotSelected.emit(this.selectedSlot);
+          this.isDragging$.next(false);
         }),
         takeUntil(fromEvent(document, 'mouseup'))
       )
@@ -242,9 +287,8 @@ export class ShongoCalendarComponent implements OnInit {
 
         if (newEnd > segment.date) {
           this._createdEvent!.end = newEnd;
+          this._refreshCalendar();
         }
-        this.refresh$.next();
-        this.slotSelected.emit(this.selectedSlot);
       });
   }
 
@@ -254,7 +298,7 @@ export class ShongoCalendarComponent implements OnInit {
    * @param event Calendar event.
    * @returns Formatted slot string.
    */
-  getSlotString(event: CalendarEvent): string {
+  getSlotString(event: TShongoCalendarEvent): string {
     if (event.end) {
       return `${moment(event.start).format('LLL')} - ${moment(event.end).format(
         'LLL'
@@ -264,7 +308,8 @@ export class ShongoCalendarComponent implements OnInit {
   }
 
   /**
-   * Changes event times on valid event time change event.
+   * Handles event resizing - moving the start or end of an event.
+   * Emits selected slot on change.
    *
    * @param eventTimesChangedEvent Calendar event times changed event.
    */
@@ -272,10 +317,12 @@ export class ShongoCalendarComponent implements OnInit {
     eventTimesChangedEvent: CalendarEventTimesChangedEvent
   ): void {
     const { event, newStart, newEnd } = eventTimesChangedEvent;
+
     event.start = newStart;
     event.end = newEnd;
-    this.refresh$.next();
+
     this.slotSelected.emit(this.selectedSlot);
+    this._refreshCalendar();
   }
 
   /**
@@ -285,17 +332,36 @@ export class ShongoCalendarComponent implements OnInit {
     this._events = this._events.filter((event) => event !== this._createdEvent);
     this._createdEvent = undefined;
     this.slotSelected.emit(null);
-    this.refresh$.next();
   }
 
   /**
-   * If clicked event is awaiting confirmation and logged in user has
-   * a permission to confirm this request, opens an event confirmation dialog.
+   * Emits calendar item on event click.
    *
-   * @param event
+   * @param event Calendar event.
    */
-  handleEventClick(event: CalendarEvent): void {
-    this.eventClicked.emit(event);
+  handleEventClick(event: TShongoCalendarEvent): void {
+    if (event.meta?.calendarItem) {
+      this.itemClicked.emit(event.meta.calendarItem);
+    }
+  }
+
+  getCalendarEvents(): TShongoCalendarEvent[] {
+    return this._events;
+  }
+
+  /**
+   * Checks if new displayed interval is a sub-interval of previously
+   * fetched interval and requests new data if needed.
+   */
+  private _handleViewOrDateChange(): void {
+    const interval = this._getViewInterval(this.viewDate);
+
+    if (
+      !this._lastFetchedInterval ||
+      !this._isSubInterval(this._lastFetchedInterval, interval)
+    ) {
+      this._requestData();
+    }
   }
 
   /**
@@ -303,7 +369,7 @@ export class ShongoCalendarComponent implements OnInit {
    *
    * @param superInterval Super interval.
    * @param subInterval Sub interval.
-   * @returns True if interval is a sub-interval of super interval, else false.
+   * @returns True if interval is a sub-interval of super interval.
    */
   private _isSubInterval(
     superInterval: IInterval,
@@ -315,7 +381,13 @@ export class ShongoCalendarComponent implements OnInit {
     );
   }
 
-  private _getInterval(viewDate: Date): IInterval {
+  /**
+   * Calculates the interval of the current view based on the view date.
+   *
+   * @param viewDate View date.
+   * @returns View interval.
+   */
+  private _getViewInterval(viewDate: Date): IInterval {
     let intervalFrom: Date;
     let intervalTo: Date;
 
@@ -353,29 +425,19 @@ export class ShongoCalendarComponent implements OnInit {
     return { start: intervalFrom, end: intervalTo };
   }
 
-  /**
-   * Checks if interval has no intersection with any calendar event.
-   *
-   * @param start Interval start.
-   * @param end Interval end.
-   * @returns True if interval has no intersection, else false.
-   */
-  private _hasNoIntersection(start: Date, end: Date): boolean {
-    return this._events.every(
-      (event) =>
-        event === this._createdEvent ||
-        (event.end && event.end <= start) ||
-        event.start >= end
-    );
+  private _getDisplayedInterval(): IInterval {
+    return this._getViewInterval(this.viewDate);
   }
 
   /**
-   * Creates calendar events from reservation requests.
+   * Creates calendar events from calendar items.
    *
    * @param calendarItems Calendar items.
    * @returns Array of calendar events.
    */
-  private _createEvents(calendarItems: ICalendarItem[]): CalendarEvent[] {
+  private _createEvents(
+    calendarItems: ICalendarItem[]
+  ): TShongoCalendarEvent[] {
     const events = calendarItems.map((item) => this._createEvent(item));
 
     return this._highlightEvents(
@@ -385,18 +447,18 @@ export class ShongoCalendarComponent implements OnInit {
   }
 
   /**
-   * Crates a calendar event from reservation request.
+   * Crates a calendar event from calendar item.
    *
-   * @param reservationRequest Reservation request.
+   * @param calendarItem Calendar item.
    * @returns Calendar event.
    */
-  private _createEvent(calendarItem: ICalendarItem): CalendarEvent {
+  private _createEvent(calendarItem: ICalendarItem): TShongoCalendarEvent {
     return {
       start: moment(calendarItem.slot.start).toDate(),
       end: moment(calendarItem.slot.end).toDate(),
       title: calendarItem.title,
       meta: {
-        owner: calendarItem.owner,
+        calendarItem,
       },
     };
   }
@@ -408,17 +470,16 @@ export class ShongoCalendarComponent implements OnInit {
    * @param end Slot end.
    * @returns Calendar event.
    */
-  private _createSelectedSlotEvent(start: Date, end?: Date): CalendarEvent {
+  private _createSelectedSlotEvent(
+    start: Date,
+    end?: Date
+  ): TShongoCalendarEvent {
     return {
       id: this._events.length,
       title: this._translate.transform('selectedTimeSlotTitle'),
       start,
       end: end ?? moment(start).add(30, 'minutes').toDate(),
       color: COLORS.created,
-      meta: {
-        tmpEvent: true,
-        owner: this.owner,
-      },
       resizable: {
         beforeStart: true,
         afterEnd: true,
@@ -435,7 +496,7 @@ export class ShongoCalendarComponent implements OnInit {
       this._events,
       this._highlightUsersReservations
     );
-    this.refresh$.next();
+    this._refreshCalendar();
   }
 
   /**
@@ -446,16 +507,22 @@ export class ShongoCalendarComponent implements OnInit {
    * @returns Calendar events.
    */
   private _highlightEvents(
-    events: CalendarEvent[],
+    events: TShongoCalendarEvent[],
     highlightMine: boolean
-  ): CalendarEvent[] {
-    let highlightedEvents: CalendarEvent[];
+  ): TShongoCalendarEvent[] {
+    let highlightedEvents: TShongoCalendarEvent[];
 
-    if (highlightMine && this.owner) {
-      const { name, email } = this.owner;
+    if (highlightMine && this.currentUser) {
+      const { name, email } = this.currentUser;
 
       highlightedEvents = events.map((event) => {
-        if (event.meta.ownerEmail === email && event.meta.owner === name) {
+        const calendarItem = event.meta?.calendarItem;
+
+        if (
+          calendarItem &&
+          calendarItem.owner.email === email &&
+          calendarItem.owner.name === name
+        ) {
           event.color = COLORS.owned;
           event.cssClass = 'shongo-calendar__event--white';
         }
@@ -476,7 +543,20 @@ export class ShongoCalendarComponent implements OnInit {
     return highlightedEvents;
   }
 
+  /**
+   * Requests data for the current view interval.
+   */
   private _requestData(): void {
-    this.loadData.emit(this.displayedInterval);
+    const displayedInterval = this._getDisplayedInterval();
+
+    this.loadData.emit(displayedInterval);
+    this._lastFetchedInterval = displayedInterval;
+  }
+
+  /**
+   * Refreshes underlying calendar.
+   */
+  private _refreshCalendar(): void {
+    this.refresh$.next();
   }
 }

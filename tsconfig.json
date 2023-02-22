@@ -12,22 +12,19 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
+    "esModuleInterop": true,
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "paths": {
-      "shongo-calendar": [
-        "dist/shongo-calendar"
-      ]
+      "@michaldrobnak/shongo-calendar/*": ["dist/shongo-calendar/*"],
+      "@michaldrobnak/shongo-calendar": ["dist/shongo-calendar"]
     },
     "target": "ES2022",
     "module": "ES2022",
     "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "dom"
-    ]
+    "lib": ["ES2022", "dom"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

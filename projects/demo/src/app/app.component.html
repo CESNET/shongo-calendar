@@ -1,3 +1,81 @@
+<nav class="navbar bg-white border-bottom">
+  <div class="container-fluid">
+    <div class="dropdown">
+      <button
+        class="btn btn-secondary dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        View
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <button
+            class="dropdown-item"
+            [class.active]="view === CalendarView.Day"
+            (click)="onViewSelect(CalendarView.Day)">
+            Day
+          </button>
+        </li>
+        <li>
+          <button
+            class="dropdown-item"
+            [class.active]="view === CalendarView.Week"
+            (click)="onViewSelect(CalendarView.Week)">
+            Week
+          </button>
+        </li>
+        <li>
+          <button
+            class="dropdown-item"
+            [class.active]="view === CalendarView.Month"
+            (click)="onViewSelect(CalendarView.Month)">
+            Month
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <b>{{ viewDate | calendarDate : view + 'ViewTitle' }}</b>
+
+    <div class="btn-group" role="group" aria-label="Basic example">
+      <button
+        type="button"
+        class="btn btn-primary"
+        mwlCalendarPreviousView
+        [view]="view"
+        [viewDate]="viewDate"
+        (viewDateChange)="onViewDateChange($event)">
+        Previous
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        mwlCalendarToday
+        [viewDate]="viewDate"
+        (viewDateChange)="onViewDateChange($event)">
+        Today
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        mwlCalendarNextView
+        [view]="view"
+        [viewDate]="viewDate"
+        (viewDateChange)="onViewDateChange($event)">
+        Next
+      </button>
+    </div>
+  </div>
+</nav>
+
 <shongo-calendar
+  [(view)]="view"
+  [(viewDate)]="viewDate"
   [allowSlotSelection]="true"
-  [loading]="false"></shongo-calendar>
+  [currentUser]="currentUser"
+  [items]="items"
+  [loading]="false"
+  (slotSelected)="onSlotSelected($event)"
+  (itemClicked)="onItemClick($event)"
+  (loadData)="onLoadData($event)"></shongo-calendar>

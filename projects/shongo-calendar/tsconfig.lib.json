@@ -8,11 +8,9 @@
     "inlineSources": true,
     "types": []
   },
-  "exclude": [
-    "**/*.spec.ts"
-  ],
+  "exclude": ["**/*.spec.ts"],
   "paths": {
     "@lib*": ["src/lib*"],
-    "@models*": ["src/lib/models*"],
+    "@models*": ["src/lib/models*"]
   }
 }

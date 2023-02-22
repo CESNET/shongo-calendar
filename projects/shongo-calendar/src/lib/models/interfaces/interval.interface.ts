@@ -1,4 +1,4 @@
 export interface IInterval {
-    start: Date;
-    end: Date;
+  start: Date;
+  end: Date;
 }
