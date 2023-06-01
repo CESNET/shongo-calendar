@@ -1,9 +1,9 @@
 {
-  "name": "@michaldrobnak/shongo-calendar",
+  "name": "@cesnet/shongo-calendar",
   "version": "15.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MichalDrobnak/shongo-calendar"
+    "url": "https://github.com/CESNET/shongo-calendar"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"

@@ -1,5 +1,5 @@
 {
-  "name": "@michaldrobnak/shongo-calendar",
+  "name": "@cesnet/shongo-calendar",
   "version": "15.0.0",
   "peerDependencies": {
     "@angular/common": "^15.0.0",
