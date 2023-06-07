@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 16
       - run: npm ci
+      - run: ng build shongo-calendar --configuration=production
 
   publish-gpr:
     needs: build
@@ -29,7 +30,6 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-      - run: npm ci
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
