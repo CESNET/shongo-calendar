@@ -8,7 +8,11 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { CalendarEventTimesChangedEvent, CalendarView } from 'angular-calendar';
+import {
+  CalendarEvent,
+  CalendarEventTimesChangedEvent,
+  CalendarView,
+} from 'angular-calendar';
 import { WeekViewHourSegment } from 'calendar-utils';
 import moment from 'moment';
 import { BehaviorSubject, fromEvent, Observable, Subject } from 'rxjs';
@@ -347,6 +351,10 @@ export class ShongoCalendarComponent implements OnInit {
 
   getCalendarEvents(): TShongoCalendarEvent[] {
     return this._events;
+  }
+
+  getOwner(event: CalendarEvent): IEventOwner | undefined {
+    return event.meta?.calendarItem?.owner;
   }
 
   /**

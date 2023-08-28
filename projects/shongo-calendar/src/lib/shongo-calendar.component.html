@@ -80,12 +80,16 @@
         <b>{{ 'tooltipTimeSlot' | translate }}:</b>
         <span>{{ getSlotString(event) }}</span>
         <b>{{ 'tooltipReservedBy' | translate }}:</b>
-        <span *ngIf="!event.meta || event.meta.owner; else unknownOwner">
+        <span
+          *ngIf="
+            getOwner(event) || currentUser as eventOwner;
+            else unknownOwner
+          ">
           <ng-container
             *ngTemplateOutlet="
               ownerData;
               context: {
-                eventOwner: !event.meta ? currentUser : event.meta.owner
+                eventOwner
               }
             "></ng-container>
         </span>
