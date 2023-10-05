@@ -406,28 +406,8 @@ export class ShongoCalendarComponent implements OnInit {
       intervalFrom = moment(viewDate).startOf('week').toDate();
       intervalTo = moment(viewDate).endOf('week').toDate();
     } else {
-      const monthStart = moment(viewDate).startOf('month').toDate();
-      const monthEnd = moment(viewDate).endOf('month').toDate();
-
-      // If date is sunday return start of date, else return start of last sunday (month view starts on sunday).
-      const intervalFromDay = moment(monthStart).day();
-      intervalFrom =
-        intervalFromDay === 7
-          ? moment(monthStart).startOf('day').toDate()
-          : moment(monthStart)
-              .subtract(intervalFromDay, 'day')
-              .startOf('day')
-              .toDate();
-
-      // If date is saturday return end saturday, else return end of next saturday (month view ends on saturday).
-      const indervalToDay = moment(monthEnd).day();
-      intervalTo =
-        indervalToDay === 6
-          ? moment(monthEnd).endOf('day').toDate()
-          : moment(monthEnd)
-              .add(6 - indervalToDay, 'day')
-              .endOf('day')
-              .toDate();
+      intervalFrom = moment(viewDate).startOf('month').startOf('week').toDate();
+      intervalTo = moment(viewDate).endOf('month').endOf('week').toDate();
     }
 
     return { start: intervalFrom, end: intervalTo };
