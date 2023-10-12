@@ -1,11 +1,17 @@
 {
   "root": true,
-  "ignorePatterns": ["*.config.js"],
+  "ignorePatterns": [
+    "*.config.js"
+  ],
   "overrides": [
     {
-      "files": ["*.ts"],
+      "files": [
+        "*.ts"
+      ],
       "parserOptions": {
-        "project": ["tsconfig.json"],
+        "project": [
+          "tsconfig.json"
+        ],
         "createDefaultProgram": true
       },
       "extends": [
@@ -26,7 +32,10 @@
           "error",
           {
             "type": "element",
-            "prefix": ["shongo", "app"],
+            "prefix": [
+              "shongo",
+              "app"
+            ],
             "style": "kebab-case"
           }
         ],
@@ -34,8 +43,12 @@
       }
     },
     {
-      "files": ["*.html"],
-      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "files": [
+        "*.html"
+      ],
+      "extends": [
+        "plugin:@angular-eslint/template/recommended"
+      ],
       "rules": {}
     }
   ]
