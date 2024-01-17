@@ -12,18 +12,23 @@
       *ngSwitchCase="CalendarView.Day"
       [viewDate]="viewDate"
       [events]="getCalendarEvents()"
+      [eventTemplate]="eventTemplate"
       [tooltipTemplate]="calendarTooltip"
       [hourSegmentTemplate]="hourSegment"
+      [hourSegmentHeight]="hourSegmentHeight"
       [refresh]="refresh$"
       [eventTitleTemplate]="eventTitle"
       (eventTimesChanged)="eventTimesChanged($event)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-day-view>
+
     <mwl-calendar-week-view
       *ngSwitchCase="CalendarView.Week"
       [viewDate]="viewDate"
       [events]="getCalendarEvents()"
+      [eventTemplate]="eventTemplate"
       [tooltipTemplate]="calendarTooltip"
       [hourSegmentTemplate]="hourSegment"
+      [hourSegmentHeight]="hourSegmentHeight"
       [weekStartsOn]="weekStartsOn"
       [refresh]="refresh$"
       [eventTitleTemplate]="eventTitle"
@@ -75,24 +80,26 @@
       class="shongo-calendar__tooltip cal-tooltip">
       <div class="cal-tooltip-arrow"></div>
       <div class="cal-tooltip-inner">
-        <b>{{ 'tooltipDescription' | translate }}:</b>
-        <span>{{ contents }}</span>
+        <ng-container *ngIf="!event.draggable">
+          <b>{{ 'tooltipDescription' | translate }}:</b>
+          <span>{{ contents }}</span>
+        </ng-container>
+
         <b>{{ 'tooltipTimeSlot' | translate }}:</b>
         <span>{{ getSlotString(event) }}</span>
-        <b>{{ 'tooltipReservedBy' | translate }}:</b>
-        <span
-          *ngIf="
-            getOwner(event) || currentUser as eventOwner;
-            else unknownOwner
-          ">
-          <ng-container
-            *ngTemplateOutlet="
-              ownerData;
-              context: {
-                eventOwner
-              }
-            "></ng-container>
-        </span>
+
+        <ng-container *ngIf="getOwner(event) || currentUser as eventOwner">
+          <b>{{ 'tooltipReservedBy' | translate }}:</b>
+          <span>
+            <ng-container
+              *ngTemplateOutlet="
+                ownerData;
+                context: {
+                  eventOwner
+                }
+              "></ng-container>
+          </span>
+        </ng-container>
       </div>
     </div>
   </ng-template>
@@ -114,6 +121,57 @@
         >)
       </span>
     </span>
+  </ng-template>
+
+  <!-- Event template -->
+  <ng-template
+    #eventTemplate
+    let-weekEvent="weekEvent"
+    let-tooltipPlacement="tooltipPlacement"
+    let-eventClicked="eventClicked"
+    let-tooltipTemplate="tooltipTemplate"
+    let-tooltipAppendToBody="tooltipAppendToBody"
+    let-tooltipDisabled="tooltipDisabled"
+    let-tooltipDelay="tooltipDelay"
+    let-column="column"
+    let-daysInWeek="daysInWeek">
+    <div
+      class="cal-event"
+      [ngStyle]="{
+        color: weekEvent.event.color?.secondaryText,
+        backgroundColor: weekEvent.event.color?.secondary,
+        borderColor: weekEvent.event.color?.primary
+      }"
+      [mwlCalendarTooltip]="
+        !tooltipDisabled
+          ? (weekEvent.event.title
+            | calendarEventTitle
+              : (daysInWeek === 1 ? 'dayTooltip' : 'weekTooltip')
+              : weekEvent.tempEvent || weekEvent.event)
+          : ''
+      "
+      [tooltipPlacement]="tooltipPlacement"
+      [tooltipEvent]="weekEvent.tempEvent || weekEvent.event"
+      [tooltipTemplate]="tooltipTemplate"
+      [tooltipAppendToBody]="tooltipAppendToBody"
+      [tooltipDelay]="tooltipDelay"
+      (mwlClick)="eventClicked.emit({ sourceEvent: $event })"
+      (mwlKeydownEnter)="eventClicked.emit({ sourceEvent: $event })"
+      tabindex="0"
+      role="application"
+      [attr.aria-label]="
+        { event: weekEvent.tempEvent || weekEvent.event, locale: locale }
+          | calendarA11y : 'eventDescription'
+      ">
+      <mwl-calendar-event-actions
+        [event]="weekEvent.tempEvent || weekEvent.event">
+      </mwl-calendar-event-actions>
+      &ngsp;
+      <mwl-calendar-event-title
+        [event]="weekEvent.tempEvent || weekEvent.event"
+        [view]="daysInWeek === 1 ? 'day' : 'week'">
+      </mwl-calendar-event-title>
+    </div>
   </ng-template>
 
   <ng-template #unknownOwner>

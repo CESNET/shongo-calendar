@@ -1,7 +1,7 @@
 export interface ICalendarTranslations {
-  selectedTimeSlotTitle: string;
   tooltipDescription: string;
   tooltipTimeSlot: string;
   tooltipReservedBy: string;
+  reservationFor: string;
   unknown: string;
 }

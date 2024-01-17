@@ -4,9 +4,13 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  Inject,
   Input,
+  LOCALE_ID,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {
   CalendarEvent,
@@ -15,7 +19,7 @@ import {
 } from 'angular-calendar';
 import { WeekViewHourSegment } from 'calendar-utils';
 import moment from 'moment';
-import { BehaviorSubject, fromEvent, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, fromEvent } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { COLORS } from './data';
 import { ICalendarItem, IEventOwner, IInterval } from './models/interfaces';
@@ -23,6 +27,9 @@ import { TShongoCalendarEvent, TWeekStart } from './models/types';
 import { TranslationPipe } from './pipes/translation.pipe';
 import { ceilToNearest } from './utils/ceil-to-nearest.util';
 import { floorToNearest } from './utils/floor-to-nearest.util';
+
+const DEFAULT_HOUR_SEGMENT_HEIGHT = 30;
+const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
 
 /**
  * Calendar component that displays events and allows creating new ones.
@@ -45,7 +52,7 @@ import { floorToNearest } from './utils/floor-to-nearest.util';
     ]),
   ],
 })
-export class ShongoCalendarComponent implements OnInit {
+export class ShongoCalendarComponent implements OnInit, OnChanges {
   /**
    * Emits selected slot on drag selection.
    */
@@ -89,6 +96,11 @@ export class ShongoCalendarComponent implements OnInit {
    * Current user that is creating reservations.
    */
   @Input() currentUser?: IEventOwner;
+
+  /**
+   * Will style calendar for mobile devices.
+   */
+  @Input() mobileDevice = false;
 
   /**
    * If true, calendar will highlight all reservations that belong to the current user.
@@ -160,6 +172,11 @@ export class ShongoCalendarComponent implements OnInit {
   readonly weekStartsOn: TWeekStart = 0;
 
   /**
+   * Height of one hour segment in pixels.
+   */
+  protected hourSegmentHeight = 30;
+
+  /**
    * Items coming from the parent app.
    */
   private _items: ICalendarItem[] = [];
@@ -197,12 +214,21 @@ export class ShongoCalendarComponent implements OnInit {
   readonly CalendarView = CalendarView;
 
   constructor(
+    @Inject(LOCALE_ID) public locale: string,
     private _cd: ChangeDetectorRef,
     private _translate: TranslationPipe
   ) {}
 
   ngOnInit(): void {
     this._handleViewOrDateChange();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['mobileDevice']) {
+      this.hourSegmentHeight = this.mobileDevice
+        ? MOBILE_HOUR_SEGMENT_HEIGHT
+        : DEFAULT_HOUR_SEGMENT_HEIGHT;
+    }
   }
 
   /**
@@ -324,6 +350,7 @@ export class ShongoCalendarComponent implements OnInit {
 
     event.start = newStart;
     event.end = newEnd;
+    event.title = this._buildSelectedSlotTitle(newStart, newEnd!);
 
     this.slotSelected.emit(this.selectedSlot);
     this._refreshCalendar();
@@ -462,11 +489,15 @@ export class ShongoCalendarComponent implements OnInit {
     start: Date,
     end?: Date
   ): TShongoCalendarEvent {
+    if (!end) {
+      end = moment(start).add(30, 'minutes').toDate();
+    }
+
     return {
       id: this._events.length,
-      title: this._translate.transform('selectedTimeSlotTitle'),
+      title: this._buildSelectedSlotTitle(start, end),
       start,
-      end: end ?? moment(start).add(30, 'minutes').toDate(),
+      end,
       color: COLORS.created,
       resizable: {
         beforeStart: true,
@@ -546,5 +577,11 @@ export class ShongoCalendarComponent implements OnInit {
    */
   private _refreshCalendar(): void {
     this.refresh$.next();
+  }
+
+  private _buildSelectedSlotTitle(start: Date, end: Date): string {
+    return `${this._translate.transform('reservationFor')} ${moment(
+      start
+    ).format('LT')} - ${moment(end).format('LT')}`;
   }
 }
