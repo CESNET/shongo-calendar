@@ -163,14 +163,16 @@
         { event: weekEvent.tempEvent || weekEvent.event, locale: locale }
           | calendarA11y : 'eventDescription'
       ">
-      <mwl-calendar-event-actions
-        [event]="weekEvent.tempEvent || weekEvent.event">
-      </mwl-calendar-event-actions>
-      &ngsp;
-      <mwl-calendar-event-title
-        [event]="weekEvent.tempEvent || weekEvent.event"
-        [view]="daysInWeek === 1 ? 'day' : 'week'">
-      </mwl-calendar-event-title>
+      <div [class.unselectable]="isDragging$ | async">
+        <mwl-calendar-event-actions
+          [event]="weekEvent.tempEvent || weekEvent.event">
+        </mwl-calendar-event-actions>
+        &nbsp;
+        <mwl-calendar-event-title
+          [event]="weekEvent.tempEvent || weekEvent.event"
+          [view]="daysInWeek === 1 ? 'day' : 'week'">
+        </mwl-calendar-event-title>
+      </div>
     </div>
   </ng-template>
 

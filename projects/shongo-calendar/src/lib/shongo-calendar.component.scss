@@ -1,3 +1,13 @@
+@mixin unselectable {
+  user-select: none;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.unselectable {
+  @include unselectable;
+}
+
 .shongo-calendar {
   --calendar-primary: var(--shongo-calendar-primary, rgb(0 200 83));
 
@@ -5,9 +15,7 @@
 
   &__title,
   &__time {
-    user-select: none;
-    pointer-events: none;
-    touch-action: none;
+    @include unselectable;
   }
 
   &__overlay {
