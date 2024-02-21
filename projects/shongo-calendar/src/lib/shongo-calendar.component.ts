@@ -317,6 +317,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
         if (newEnd > segment.date) {
           this._createdEvent!.end = newEnd;
+          this._createdEvent!.title = this._buildSelectedSlotTitle(this._createdEvent!.start, newEnd!);
           this._refreshCalendar();
         }
       });
