@@ -11,7 +11,7 @@ import moment from 'moment';
 import { ICalendarTranslations } from './models/interfaces';
 import { TranslationPipe } from './pipes/translation.pipe';
 import { ShongoCalendarComponent } from './shongo-calendar.component';
-import { TRANSLATIONS, translationsFactory } from './translations';
+import { SHONGO_CALENDAR_I18N, translationsFactory } from './translations';
 
 function momentAdapterFactory() {
   return adapterFactory(moment);
@@ -45,7 +45,7 @@ export class ShongoCalendarModule {
       ngModule: ShongoCalendarModule,
       providers: [
         {
-          provide: TRANSLATIONS,
+          provide: SHONGO_CALENDAR_I18N,
           useFactory: () => translationsFactory(translations),
         },
       ],

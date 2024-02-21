@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { ICalendarTranslations } from '../models/interfaces';
 
-export const TRANSLATIONS = new InjectionToken<ICalendarTranslations>(
-  'Calendar translations'
+export const SHONGO_CALENDAR_I18N = new InjectionToken<ICalendarTranslations>(
+  'Shongo calendar i18n'
 );

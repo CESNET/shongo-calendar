@@ -1,7 +1,7 @@
 import { Inject, Pipe, PipeTransform } from '@angular/core';
 import { InvalidTranslationKeyError } from '../errors';
 import { ICalendarTranslations } from '../models/interfaces';
-import { TRANSLATIONS } from '../translations';
+import { SHONGO_CALENDAR_I18N } from '../translations';
 
 @Pipe({
   name: 'translate',
@@ -9,7 +9,7 @@ import { TRANSLATIONS } from '../translations';
 })
 export class TranslationPipe implements PipeTransform {
   constructor(
-    @Inject(TRANSLATIONS)
+    @Inject(SHONGO_CALENDAR_I18N)
     private _translations: ICalendarTranslations
   ) {}
 
