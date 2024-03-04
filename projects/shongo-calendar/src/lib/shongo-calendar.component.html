@@ -8,6 +8,7 @@
         <div></div>
       </div>
     </div>
+
     <mwl-calendar-day-view
       *ngSwitchCase="CalendarView.Day"
       [viewDate]="viewDate"
@@ -35,6 +36,7 @@
       (eventTimesChanged)="eventTimesChanged($event)"
       (dayHeaderClicked)="selectDate($event.day.date)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-week-view>
+
     <mwl-calendar-month-view
       *ngSwitchCase="CalendarView.Month"
       [viewDate]="viewDate"
