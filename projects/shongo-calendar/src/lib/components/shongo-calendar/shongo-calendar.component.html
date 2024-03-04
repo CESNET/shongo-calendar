@@ -1,13 +1,6 @@
 <ng-container *ngIf="{ dragging: isDragging$ | async } as events">
   <div [ngSwitch]="view" class="shongo-calendar">
-    <div class="shongo-calendar__overlay" *ngIf="loading" [@loading]>
-      <div class="shongo-calendar__loading">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </div>
+    <loading-overlay *ngIf="loading"></loading-overlay>
 
     <mwl-calendar-day-view
       *ngSwitchCase="CalendarView.Day"
