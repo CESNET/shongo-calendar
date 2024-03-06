@@ -1,13 +1,10 @@
 <ng-container *ngIf="{ dragging: isDragging$ | async } as events">
-  <div [ngSwitch]="view" class="shongo-calendar">
-    <div class="shongo-calendar__overlay" *ngIf="loading" [@loading]>
-      <div class="shongo-calendar__loading">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </div>
+  <div
+    [ngSwitch]="view"
+    class="shongo-calendar"
+    [class.shongo-calendar--fill]="fill">
+    <loading-overlay *ngIf="loading"></loading-overlay>
+
     <mwl-calendar-day-view
       *ngSwitchCase="CalendarView.Day"
       [viewDate]="viewDate"
@@ -35,8 +32,10 @@
       (eventTimesChanged)="eventTimesChanged($event)"
       (dayHeaderClicked)="selectDate($event.day.date)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-week-view>
+
     <mwl-calendar-month-view
       *ngSwitchCase="CalendarView.Month"
+      class="shongo-calendar__month-view"
       [viewDate]="viewDate"
       [events]="getCalendarEvents()"
       [tooltipTemplate]="calendarTooltip"
@@ -137,6 +136,7 @@
     let-daysInWeek="daysInWeek">
     <div
       class="cal-event"
+      [class.shongo-calendar__event--unselectable]="isDragging$ | async"
       [ngStyle]="{
         color: weekEvent.event.color?.secondaryText,
         backgroundColor: weekEvent.event.color?.secondary,
@@ -163,16 +163,14 @@
         { event: weekEvent.tempEvent || weekEvent.event, locale: locale }
           | calendarA11y : 'eventDescription'
       ">
-      <div [class.unselectable]="isDragging$ | async">
-        <mwl-calendar-event-actions
-          [event]="weekEvent.tempEvent || weekEvent.event">
-        </mwl-calendar-event-actions>
-        &nbsp;
-        <mwl-calendar-event-title
-          [event]="weekEvent.tempEvent || weekEvent.event"
-          [view]="daysInWeek === 1 ? 'day' : 'week'">
-        </mwl-calendar-event-title>
-      </div>
+      <mwl-calendar-event-actions
+        [event]="weekEvent.tempEvent || weekEvent.event">
+      </mwl-calendar-event-actions>
+      &nbsp;
+      <mwl-calendar-event-title
+        [event]="weekEvent.tempEvent || weekEvent.event"
+        [view]="daysInWeek === 1 ? 'day' : 'week'">
+      </mwl-calendar-event-title>
     </div>
   </ng-template>
 

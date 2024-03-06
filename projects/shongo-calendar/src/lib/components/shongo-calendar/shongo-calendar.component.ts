@@ -1,4 +1,3 @@
-import { animate, style, transition, trigger } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -11,6 +10,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewEncapsulation,
 } from '@angular/core';
 import {
   CalendarEvent,
@@ -21,12 +21,12 @@ import { WeekViewHourSegment } from 'calendar-utils';
 import moment from 'moment';
 import { BehaviorSubject, Observable, Subject, fromEvent } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
-import { COLORS } from './data';
-import { ICalendarItem, IEventOwner, IInterval } from './models/interfaces';
-import { TShongoCalendarEvent, TWeekStart } from './models/types';
-import { TranslationPipe } from './pipes/translation.pipe';
-import { ceilToNearest } from './utils/ceil-to-nearest.util';
-import { floorToNearest } from './utils/floor-to-nearest.util';
+import { COLORS } from '../../data';
+import { ICalendarItem, IEventOwner, IInterval } from '../../models/interfaces';
+import { TShongoCalendarEvent, TWeekStart } from '../../models/types';
+import { TranslationPipe } from '../../pipes/translation.pipe';
+import { ceilToNearest } from '../../utils/ceil-to-nearest.util';
+import { floorToNearest } from '../../utils/floor-to-nearest.util';
 
 const DEFAULT_HOUR_SEGMENT_HEIGHT = 30;
 const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
@@ -42,15 +42,7 @@ const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
   templateUrl: './shongo-calendar.component.html',
   styleUrls: ['./shongo-calendar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('loading', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('200ms ease', style({ opacity: 1 })),
-      ]),
-      transition(':leave', animate('200ms ease', style({ opacity: 0 }))),
-    ]),
-  ],
+  encapsulation: ViewEncapsulation.None,
 })
 export class ShongoCalendarComponent implements OnInit, OnChanges {
   /**
@@ -101,6 +93,14 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
    * Will style calendar for mobile devices.
    */
   @Input() mobileDevice = false;
+
+  /**
+   * Whether to fill the whole container with the calendar.
+   * Makes sense only for the month view.
+   *
+   * @default true
+   */
+  @Input() fill = true;
 
   /**
    * If true, calendar will highlight all reservations that belong to the current user.
@@ -317,7 +317,10 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
         if (newEnd > segment.date) {
           this._createdEvent!.end = newEnd;
-          this._createdEvent!.title = this._buildSelectedSlotTitle(this._createdEvent!.start, newEnd!);
+          this._createdEvent!.title = this._buildSelectedSlotTitle(
+            this._createdEvent!.start,
+            newEnd!
+          );
           this._refreshCalendar();
         }
       });

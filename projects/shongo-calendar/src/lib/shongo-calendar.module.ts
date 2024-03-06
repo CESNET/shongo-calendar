@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ModuleWithProviders, NgModule } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   CalendarDateFormatter,
   CalendarModule,
@@ -8,9 +9,10 @@ import {
 } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/moment';
 import moment from 'moment';
+import { LoadingOverlayComponent } from './components/loading-overlay/loading-overlay.component';
+import { ShongoCalendarComponent } from './components/shongo-calendar/shongo-calendar.component';
 import { ICalendarTranslations } from './models/interfaces';
 import { TranslationPipe } from './pipes/translation.pipe';
-import { ShongoCalendarComponent } from './shongo-calendar.component';
 import { SHONGO_CALENDAR_I18N, translationsFactory } from './translations';
 
 function momentAdapterFactory() {
@@ -18,8 +20,13 @@ function momentAdapterFactory() {
 }
 
 @NgModule({
-  declarations: [ShongoCalendarComponent, TranslationPipe],
+  declarations: [
+    ShongoCalendarComponent,
+    TranslationPipe,
+    LoadingOverlayComponent,
+  ],
   imports: [
+    BrowserAnimationsModule,
     CommonModule,
     CalendarModule.forRoot(
       {
