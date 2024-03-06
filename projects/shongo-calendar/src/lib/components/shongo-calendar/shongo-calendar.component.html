@@ -132,6 +132,7 @@
     let-daysInWeek="daysInWeek">
     <div
       class="cal-event"
+      [class.shongo-calendar__event--unselectable]="isDragging$ | async"
       [ngStyle]="{
         color: weekEvent.event.color?.secondaryText,
         backgroundColor: weekEvent.event.color?.secondary,
@@ -158,16 +159,14 @@
         { event: weekEvent.tempEvent || weekEvent.event, locale: locale }
           | calendarA11y : 'eventDescription'
       ">
-      <div [class.unselectable]="isDragging$ | async">
-        <mwl-calendar-event-actions
-          [event]="weekEvent.tempEvent || weekEvent.event">
-        </mwl-calendar-event-actions>
-        &nbsp;
-        <mwl-calendar-event-title
-          [event]="weekEvent.tempEvent || weekEvent.event"
-          [view]="daysInWeek === 1 ? 'day' : 'week'">
-        </mwl-calendar-event-title>
-      </div>
+      <mwl-calendar-event-actions
+        [event]="weekEvent.tempEvent || weekEvent.event">
+      </mwl-calendar-event-actions>
+      &nbsp;
+      <mwl-calendar-event-title
+        [event]="weekEvent.tempEvent || weekEvent.event"
+        [view]="daysInWeek === 1 ? 'day' : 'week'">
+      </mwl-calendar-event-title>
     </div>
   </ng-template>
 
