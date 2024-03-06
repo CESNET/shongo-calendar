@@ -27,6 +27,10 @@ export class AppComponent {
       slot: { start: new Date(), end: moment().add(1, 'hour').toDate() },
       owner: this.currentUser,
       title: 'Meeting room reservation',
+      resource: {
+        id: '1',
+        name: 'Meeting room 1',
+      },
     },
   ];
 

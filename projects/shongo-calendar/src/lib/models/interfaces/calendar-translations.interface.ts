@@ -3,5 +3,6 @@ export interface ICalendarTranslations {
   tooltipTimeSlot: string;
   tooltipReservedBy: string;
   reservationFor: string;
+  tooltipResource: string;
   unknown: string;
 }

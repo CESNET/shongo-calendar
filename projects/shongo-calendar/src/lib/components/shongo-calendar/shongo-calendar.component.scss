@@ -14,7 +14,18 @@
 
   position: relative;
 
-  &__title,
+  &__title {
+    @include unselectable;
+
+    line-height: 1.2rem;
+  }
+
+  &__title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   &__time {
     @include unselectable;
   }

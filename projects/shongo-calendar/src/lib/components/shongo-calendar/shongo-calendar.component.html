@@ -14,7 +14,6 @@
       [hourSegmentTemplate]="hourSegment"
       [hourSegmentHeight]="hourSegmentHeight"
       [refresh]="refresh$"
-      [eventTitleTemplate]="eventTitle"
       (eventTimesChanged)="eventTimesChanged($event)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-day-view>
 
@@ -28,7 +27,6 @@
       [hourSegmentHeight]="hourSegmentHeight"
       [weekStartsOn]="weekStartsOn"
       [refresh]="refresh$"
-      [eventTitleTemplate]="eventTitle"
       (eventTimesChanged)="eventTimesChanged($event)"
       (dayHeaderClicked)="selectDate($event.day.date)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-week-view>
@@ -79,6 +77,11 @@
       class="shongo-calendar__tooltip cal-tooltip">
       <div class="cal-tooltip-arrow"></div>
       <div class="cal-tooltip-inner">
+        <ng-container *ngIf="getResourceName(event) as resourceName">
+          <b>{{ 'tooltipResource' | translate }}:</b>
+          <span>{{ resourceName }}</span>
+        </ng-container>
+
         <ng-container *ngIf="!event.draggable">
           <b>{{ 'tooltipDescription' | translate }}:</b>
           <span>{{ contents }}</span>
@@ -105,13 +108,21 @@
 
   <!-- Event title template -->
   <ng-template #eventTitle let-event="event" let-view="view">
-    <span
-      class="shongo-calendar__title cal-event-title"
+    <div
+      class="shongo-calendar__title"
       [attr.aria-hidden]="{} | calendarA11y : 'hideEventTitle'">
-      {{ event.title | calendarEventTitle : view : event }}
-    </span>
+      <div
+        *ngIf="getResourceName(event) as resourceName"
+        class="shongo-calendar__title-text">
+        <b class="cal-event-title">{{ resourceName }}</b>
+      </div>
+      <div class="cal-event-title shongo-calendar__title-text">
+        {{ event.title | calendarEventTitle : view : event }}
+      </div>
+    </div>
   </ng-template>
 
+  <!-- Owner data template -->
   <ng-template #ownerData let-eventOwner="eventOwner">
     <span *ngIf="eventOwner; else unknownOwner">
       {{ eventOwner.name }}
@@ -166,10 +177,10 @@
       <mwl-calendar-event-actions
         [event]="weekEvent.tempEvent || weekEvent.event">
       </mwl-calendar-event-actions>
-      &nbsp;
       <mwl-calendar-event-title
         [event]="weekEvent.tempEvent || weekEvent.event"
-        [view]="daysInWeek === 1 ? 'day' : 'week'">
+        [view]="daysInWeek === 1 ? 'day' : 'week'"
+        [customTemplate]="eventTitle">
       </mwl-calendar-event-title>
     </div>
   </ng-template>
