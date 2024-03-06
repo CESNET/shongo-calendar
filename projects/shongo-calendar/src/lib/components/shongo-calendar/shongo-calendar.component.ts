@@ -388,6 +388,10 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
     return event.meta?.calendarItem?.owner;
   }
 
+  getResourceName(event: CalendarEvent): string | undefined {
+    return event.meta?.calendarItem?.resource?.name;
+  }
+
   /**
    * Checks if new displayed interval is a sub-interval of previously
    * fetched interval and requests new data if needed.

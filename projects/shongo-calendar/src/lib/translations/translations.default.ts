@@ -6,4 +6,5 @@ export const DEFAULT_TRANSLATIONS: ICalendarTranslations = {
   tooltipReservedBy: 'Reserved by',
   unknown: 'Unknown',
   reservationFor: 'Reservation for',
+  tooltipResource: 'Resource',
 };
