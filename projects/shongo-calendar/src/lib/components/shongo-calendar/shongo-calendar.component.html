@@ -1,5 +1,8 @@
 <ng-container *ngIf="{ dragging: isDragging$ | async } as events">
-  <div [ngSwitch]="view" class="shongo-calendar">
+  <div
+    [ngSwitch]="view"
+    class="shongo-calendar"
+    [class.shongo-calendar--fill]="fill">
     <loading-overlay *ngIf="loading"></loading-overlay>
 
     <mwl-calendar-day-view
@@ -32,6 +35,7 @@
 
     <mwl-calendar-month-view
       *ngSwitchCase="CalendarView.Month"
+      class="shongo-calendar__month-view"
       [viewDate]="viewDate"
       [events]="getCalendarEvents()"
       [tooltipTemplate]="calendarTooltip"

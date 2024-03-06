@@ -10,6 +10,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewEncapsulation,
 } from '@angular/core';
 import {
   CalendarEvent,
@@ -41,6 +42,7 @@ const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
   templateUrl: './shongo-calendar.component.html',
   styleUrls: ['./shongo-calendar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class ShongoCalendarComponent implements OnInit, OnChanges {
   /**
@@ -91,6 +93,14 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
    * Will style calendar for mobile devices.
    */
   @Input() mobileDevice = false;
+
+  /**
+   * Whether to fill the whole container with the calendar.
+   * Makes sense only for the month view.
+   *
+   * @default true
+   */
+  @Input() fill = true;
 
   /**
    * If true, calendar will highlight all reservations that belong to the current user.
