@@ -20,7 +20,7 @@ import {
 import { WeekViewHourSegment } from 'calendar-utils';
 import moment from 'moment';
 import { BehaviorSubject, Observable, Subject, fromEvent, merge } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { finalize, first, takeUntil, tap } from 'rxjs/operators';
 import { COLORS } from '../../data';
 import { ICalendarItem, IEventOwner, IInterval } from '../../models/interfaces';
 import { TShongoCalendarEvent, TWeekStart } from '../../models/types';
@@ -285,8 +285,8 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
       return;
     }
 
-    const moveEvent = this._createMoveEvent$();
-    const endEvent = this._createEndEvent$();
+    const endEvent$ = this._createEndEvent$();
+    const moveEvent$ = this._createMoveEvent$(endEvent$);
 
     const prevCreatedEvent = this._createdEvent;
     this.isDragging$.next(true);
@@ -299,16 +299,15 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
     const segmentPosition = segmentElement.getBoundingClientRect();
 
-    (moveEvent as Observable<TCreationEvent>)
+    (moveEvent$ as Observable<TCreationEvent>)
       .pipe(
         finalize(() => {
           this.slotSelected.emit(this.selectedSlot);
           this.isDragging$.next(false);
-        }),
-        takeUntil(endEvent)
+        })
       )
-      .subscribe((moveEvent: TCreationEvent) => {
-        const { x, y } = this._getClientPosition(moveEvent);
+      .subscribe((moveEvent$: TCreationEvent) => {
+        const { x, y } = this._getClientPosition(moveEvent$);
 
         const minutesDiff = ceilToNearest(y - segmentPosition.top, 30);
 
@@ -599,18 +598,22 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
     ).format('LT')} - ${moment(end).format('LT')}`;
   }
 
-  private _createMoveEvent$(): Observable<TCreationEvent> {
+  private _createMoveEvent$(
+    until$: Observable<unknown>
+  ): Observable<TCreationEvent> {
     return merge(
-      fromEvent<MouseEvent>(document, 'mousemove'),
-      fromEvent<TouchEvent>(document, 'touchmove')
+      fromEvent<MouseEvent>(window, 'mousemove'),
+      fromEvent<TouchEvent>(window, 'touchmove', { passive: false })
+        .pipe(tap((e) => e.preventDefault()))
+        .pipe(takeUntil(until$))
     );
   }
 
   private _createEndEvent$(): Observable<TCreationEvent> {
     return merge(
-      fromEvent<MouseEvent>(document, 'mouseup'),
-      fromEvent<TouchEvent>(document, 'touchend')
-    );
+      fromEvent<MouseEvent>(window, 'mouseup'),
+      fromEvent<TouchEvent>(window, 'touchend')
+    ).pipe(first());
   }
   private _getClientPosition(event: TCreationEvent): { x: number; y: number } {
     let y: number;
