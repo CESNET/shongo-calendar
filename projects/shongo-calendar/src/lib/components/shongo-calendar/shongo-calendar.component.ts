@@ -19,7 +19,7 @@ import {
 } from 'angular-calendar';
 import { WeekViewHourSegment } from 'calendar-utils';
 import moment from 'moment';
-import { BehaviorSubject, Observable, Subject, fromEvent } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, fromEvent, merge } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { COLORS } from '../../data';
 import { ICalendarItem, IEventOwner, IInterval } from '../../models/interfaces';
@@ -27,6 +27,8 @@ import { TShongoCalendarEvent, TWeekStart } from '../../models/types';
 import { TranslationPipe } from '../../pipes/translation.pipe';
 import { ceilToNearest } from '../../utils/ceil-to-nearest.util';
 import { floorToNearest } from '../../utils/floor-to-nearest.util';
+
+type TCreationEvent = MouseEvent | TouchEvent;
 
 const DEFAULT_HOUR_SEGMENT_HEIGHT = 30;
 const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
@@ -279,6 +281,13 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
    * @param segmentElement Drag start segment element.
    */
   startDragToCreate(segment: WeekViewHourSegment, segmentElement: HTMLElement) {
+    if (!this.allowSlotSelection) {
+      return;
+    }
+
+    const moveEvent = this._createMoveEvent$();
+    const endEvent = this._createEndEvent$();
+
     const prevCreatedEvent = this._createdEvent;
     this.isDragging$.next(true);
 
@@ -290,25 +299,22 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
     const segmentPosition = segmentElement.getBoundingClientRect();
 
-    (fromEvent(document, 'mousemove') as Observable<MouseEvent>)
+    (moveEvent as Observable<TCreationEvent>)
       .pipe(
         finalize(() => {
           this.slotSelected.emit(this.selectedSlot);
           this.isDragging$.next(false);
         }),
-        takeUntil(fromEvent(document, 'mouseup'))
+        takeUntil(endEvent)
       )
-      .subscribe((mouseMoveEvent: MouseEvent) => {
-        const minutesDiff = ceilToNearest(
-          mouseMoveEvent.clientY - segmentPosition.top,
-          30
-        );
+      .subscribe((moveEvent: TCreationEvent) => {
+        const { x, y } = this._getClientPosition(moveEvent);
+
+        const minutesDiff = ceilToNearest(y - segmentPosition.top, 30);
 
         const daysDiff =
-          floorToNearest(
-            mouseMoveEvent.clientX - segmentPosition.left,
-            segmentPosition.width
-          ) / segmentPosition.width;
+          floorToNearest(x - segmentPosition.left, segmentPosition.width) /
+          segmentPosition.width;
 
         const newEnd = moment(segment.date)
           .add(minutesDiff, 'minute')
@@ -591,5 +597,33 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
     return `${this._translate.transform('reservationFor')} ${moment(
       start
     ).format('LT')} - ${moment(end).format('LT')}`;
+  }
+
+  private _createMoveEvent$(): Observable<TCreationEvent> {
+    return merge(
+      fromEvent<MouseEvent>(document, 'mousemove'),
+      fromEvent<TouchEvent>(document, 'touchmove')
+    );
+  }
+
+  private _createEndEvent$(): Observable<TCreationEvent> {
+    return merge(
+      fromEvent<MouseEvent>(document, 'mouseup'),
+      fromEvent<TouchEvent>(document, 'touchend')
+    );
+  }
+  private _getClientPosition(event: TCreationEvent): { x: number; y: number } {
+    let y: number;
+    let x: number;
+
+    if ('touches' in event) {
+      y = event.touches[0].clientY;
+      x = event.touches[0].clientX;
+    } else {
+      y = event.clientY;
+      x = event.clientX;
+    }
+
+    return { x, y };
   }
 }
