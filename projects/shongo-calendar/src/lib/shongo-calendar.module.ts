@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ModuleWithProviders, NgModule } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   CalendarDateFormatter,
   CalendarModule,
@@ -26,7 +25,6 @@ function momentAdapterFactory() {
     LoadingOverlayComponent,
   ],
   imports: [
-    BrowserAnimationsModule,
     CommonModule,
     CalendarModule.forRoot(
       {
