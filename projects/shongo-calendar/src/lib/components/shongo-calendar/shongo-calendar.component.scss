@@ -23,13 +23,18 @@
   &__title {
     @include unselectable;
 
-    line-height: 1.2rem;
+    display: flex;
+    flex-flow: column wrap;
+    height: 100%;
+    align-content: flex-start;
+    line-height: 1.1rem;
   }
 
   &__resource {
     @include overflow-ellipsis;
 
     font-weight: bold;
+    margin-right: 0.5rem;
   }
 
   &__description {

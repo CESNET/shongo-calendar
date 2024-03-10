@@ -24,11 +24,20 @@ export class AppComponent {
 
   items: ICalendarItem[] = [
     {
-      slot: { start: new Date(), end: moment().add(1, 'hour').toDate() },
+      slot: { start: new Date(), end: moment().add(30, 'minute').toDate() },
       owner: this.currentUser,
-      title: 'Meeting room reservation',
+      title: 'Meeting room reservation 1',
       resource: {
         id: '1',
+        name: 'Meeting room 1',
+      },
+    },
+    {
+      slot: { start: new Date(), end: moment().add(60, 'minute').toDate() },
+      owner: this.currentUser,
+      title: 'Meeting room reservation 2',
+      resource: {
+        id: '2',
         name: 'Meeting room 1',
       },
     },
