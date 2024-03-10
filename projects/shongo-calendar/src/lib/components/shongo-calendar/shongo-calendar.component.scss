@@ -4,6 +4,12 @@
   touch-action: none;
 }
 
+@mixin overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @mixin fill {
   width: 100%;
   height: 100%;
@@ -20,10 +26,14 @@
     line-height: 1.2rem;
   }
 
-  &__title-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  &__resource {
+    @include overflow-ellipsis;
+
+    font-weight: bold;
+  }
+
+  &__description {
+    @include overflow-ellipsis;
   }
 
   &__time {
@@ -82,5 +92,11 @@
     .cal-cell-row {
       @include fill;
     }
+  }
+}
+
+.shongo-tooltip {
+  &__title {
+    font-weight: bold;
   }
 }

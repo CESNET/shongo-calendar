@@ -78,20 +78,28 @@
       <div class="cal-tooltip-arrow"></div>
       <div class="cal-tooltip-inner">
         <ng-container *ngIf="getResourceName(event) as resourceName">
-          <b>{{ 'tooltipResource' | translate }}:</b>
+          <b class="shongo-tooltip__title"
+            >{{ 'tooltipResource' | translate }}:</b
+          >
           <span>{{ resourceName }}</span>
         </ng-container>
 
         <ng-container *ngIf="!event.draggable">
-          <b>{{ 'tooltipDescription' | translate }}:</b>
+          <b class="shongo-tooltip__title"
+            >{{ 'tooltipDescription' | translate }}:</b
+          >
           <span>{{ contents }}</span>
         </ng-container>
 
-        <b>{{ 'tooltipTimeSlot' | translate }}:</b>
+        <b class="shongo-tooltip__title"
+          >{{ 'tooltipTimeSlot' | translate }}:</b
+        >
         <span>{{ getSlotString(event) }}</span>
 
         <ng-container *ngIf="getOwner(event) || currentUser as eventOwner">
-          <b>{{ 'tooltipReservedBy' | translate }}:</b>
+          <b class="shongo-tooltip__title"
+            >{{ 'tooltipReservedBy' | translate }}:</b
+          >
           <span>
             <ng-container
               *ngTemplateOutlet="
@@ -113,10 +121,10 @@
       [attr.aria-hidden]="{} | calendarA11y : 'hideEventTitle'">
       <div
         *ngIf="getResourceName(event) as resourceName"
-        class="shongo-calendar__title-text">
+        class="shongo-calendar__resource">
         <b class="cal-event-title">{{ resourceName }}</b>
       </div>
-      <div class="cal-event-title shongo-calendar__title-text">
+      <div class="cal-event-title shongo-calendar__description">
         {{ event.title | calendarEventTitle : view : event }}
       </div>
     </div>
