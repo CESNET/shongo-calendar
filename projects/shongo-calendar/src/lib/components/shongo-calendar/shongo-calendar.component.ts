@@ -603,10 +603,10 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   ): Observable<TCreationEvent> {
     return merge(
       fromEvent<MouseEvent>(window, 'mousemove'),
-      fromEvent<TouchEvent>(window, 'touchmove', { passive: false })
-        .pipe(tap((e) => e.preventDefault()))
-        .pipe(takeUntil(until$))
-    );
+      fromEvent<TouchEvent>(window, 'touchmove', { passive: false }).pipe(
+        tap((e) => e.preventDefault())
+      )
+    ).pipe(takeUntil(until$));
   }
 
   private _createEndEvent$(): Observable<TCreationEvent> {

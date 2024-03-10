@@ -11,6 +11,7 @@ import { adapterFactory } from 'angular-calendar/date-adapters/moment';
 import moment from 'moment';
 import { LoadingOverlayComponent } from './components/loading-overlay/loading-overlay.component';
 import { ShongoCalendarComponent } from './components/shongo-calendar/shongo-calendar.component';
+import { DelayTouchStartDirective } from './directives';
 import { ICalendarTranslations } from './models/interfaces';
 import { TranslationPipe } from './pipes/translation.pipe';
 import { SHONGO_CALENDAR_I18N, translationsFactory } from './translations';
@@ -24,6 +25,7 @@ function momentAdapterFactory() {
     ShongoCalendarComponent,
     TranslationPipe,
     LoadingOverlayComponent,
+    DelayTouchStartDirective,
   ],
   imports: [
     BrowserAnimationsModule,

@@ -57,7 +57,8 @@
       [class.cal-after-hour-start]="!segment.isStart"
       [ngClass]="segment.cssClass"
       (mousedown)="startDragToCreate(segment, segmentElement)"
-      (touchstart)="startDragToCreate(segment, segmentElement)">
+      (delayedTouchStart)="startDragToCreate(segment, segmentElement)"
+      [delayTouchStart]="400">
       <div *ngIf="isTimeLabel" class="shongo-calendar__time cal-time">
         {{ segment.date | calendarDate : 'weekViewHour' : locale }}
       </div>
