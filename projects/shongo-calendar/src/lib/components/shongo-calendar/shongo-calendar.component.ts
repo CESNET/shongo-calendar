@@ -176,7 +176,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   /**
    * Height of one hour segment in pixels.
    */
-  protected hourSegmentHeight = 30;
+  protected hourSegmentHeight = this._getSegmentHeight();
 
   /**
    * Items coming from the parent app.
@@ -227,9 +227,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['mobileDevice']) {
-      this.hourSegmentHeight = this.mobileDevice
-        ? MOBILE_HOUR_SEGMENT_HEIGHT
-        : DEFAULT_HOUR_SEGMENT_HEIGHT;
+      this.hourSegmentHeight = this._getSegmentHeight();
     }
   }
 
@@ -309,7 +307,10 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
       .subscribe((moveEvent$: TCreationEvent) => {
         const { x, y } = this._getClientPosition(moveEvent$);
 
-        const minutesDiff = ceilToNearest(y - segmentPosition.top, 30);
+        const minutesDiff = ceilToNearest(
+          y - segmentPosition.top,
+          this.hourSegmentHeight
+        );
 
         const daysDiff =
           floorToNearest(x - segmentPosition.left, segmentPosition.width) /
@@ -395,6 +396,12 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
   getResourceName(event: CalendarEvent): string | undefined {
     return event.meta?.calendarItem?.resource?.name;
+  }
+
+  private _getSegmentHeight(): number {
+    return this.mobileDevice
+      ? MOBILE_HOUR_SEGMENT_HEIGHT
+      : DEFAULT_HOUR_SEGMENT_HEIGHT;
   }
 
   /**
