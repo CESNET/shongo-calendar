@@ -32,6 +32,7 @@ type TCreationEvent = MouseEvent | TouchEvent;
 
 const DEFAULT_HOUR_SEGMENT_HEIGHT = 30;
 const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
+const SEGMENT_MINUTES = 30;
 
 /**
  * Calendar component that displays events and allows creating new ones.
@@ -297,7 +298,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
     const segmentPosition = segmentElement.getBoundingClientRect();
 
-    (moveEvent$ as Observable<TCreationEvent>)
+    moveEvent$
       .pipe(
         finalize(() => {
           this.slotSelected.emit(this.selectedSlot);
@@ -311,7 +312,8 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
           y - segmentPosition.top,
           this.hourSegmentHeight
         );
-        const minutesDiff = (eventHeight / this.hourSegmentHeight) * 30;
+        const minutesDiff =
+          (eventHeight / this.hourSegmentHeight) * SEGMENT_MINUTES;
 
         const daysDiff =
           floorToNearest(x - segmentPosition.left, segmentPosition.width) /
