@@ -51,14 +51,14 @@
     let-isTimeLabel="isTimeLabel">
     <div
       #segmentElement
-      class="cal-hour-segment"
+      class="cal-hour-segment shongo-calendar__hour-segment"
       [style.height.px]="segmentHeight"
       [class.cal-hour-start]="segment.isStart"
       [class.cal-after-hour-start]="!segment.isStart"
       [ngClass]="segment.cssClass"
-      (mousedown)="
-        allowSlotSelection && startDragToCreate(segment, segmentElement)
-      ">
+      (mousedown)="startDragToCreate(segment, segmentElement)"
+      (delayedTouchStart)="startDragToCreate(segment, segmentElement)"
+      [delayTouchStart]="400">
       <div *ngIf="isTimeLabel" class="shongo-calendar__time cal-time">
         {{ segment.date | calendarDate : 'weekViewHour' : locale }}
       </div>

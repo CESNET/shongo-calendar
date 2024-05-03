@@ -19,8 +19,8 @@ import {
 } from 'angular-calendar';
 import { WeekViewHourSegment } from 'calendar-utils';
 import moment from 'moment';
-import { BehaviorSubject, Observable, Subject, fromEvent } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, fromEvent, merge } from 'rxjs';
+import { finalize, first, takeUntil, tap } from 'rxjs/operators';
 import { COLORS } from '../../data';
 import { ICalendarItem, IEventOwner, IInterval } from '../../models/interfaces';
 import { TShongoCalendarEvent, TWeekStart } from '../../models/types';
@@ -28,8 +28,11 @@ import { TranslationPipe } from '../../pipes/translation.pipe';
 import { ceilToNearest } from '../../utils/ceil-to-nearest.util';
 import { floorToNearest } from '../../utils/floor-to-nearest.util';
 
+type TCreationEvent = MouseEvent | TouchEvent;
+
 const DEFAULT_HOUR_SEGMENT_HEIGHT = 30;
 const MOBILE_HOUR_SEGMENT_HEIGHT = 40;
+const SEGMENT_MINUTES = 30;
 
 /**
  * Calendar component that displays events and allows creating new ones.
@@ -174,7 +177,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   /**
    * Height of one hour segment in pixels.
    */
-  protected hourSegmentHeight = 30;
+  protected hourSegmentHeight = this._getSegmentHeight();
 
   /**
    * Items coming from the parent app.
@@ -225,9 +228,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['mobileDevice']) {
-      this.hourSegmentHeight = this.mobileDevice
-        ? MOBILE_HOUR_SEGMENT_HEIGHT
-        : DEFAULT_HOUR_SEGMENT_HEIGHT;
+      this.hourSegmentHeight = this._getSegmentHeight();
     }
   }
 
@@ -279,6 +280,13 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
    * @param segmentElement Drag start segment element.
    */
   startDragToCreate(segment: WeekViewHourSegment, segmentElement: HTMLElement) {
+    if (!this.allowSlotSelection) {
+      return;
+    }
+
+    const endEvent$ = this._createEndEvent$();
+    const moveEvent$ = this._createMoveEvent$(endEvent$);
+
     const prevCreatedEvent = this._createdEvent;
     this.isDragging$.next(true);
 
@@ -290,25 +298,26 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
     const segmentPosition = segmentElement.getBoundingClientRect();
 
-    (fromEvent(document, 'mousemove') as Observable<MouseEvent>)
+    moveEvent$
       .pipe(
         finalize(() => {
           this.slotSelected.emit(this.selectedSlot);
           this.isDragging$.next(false);
-        }),
-        takeUntil(fromEvent(document, 'mouseup'))
+        })
       )
-      .subscribe((mouseMoveEvent: MouseEvent) => {
-        const minutesDiff = ceilToNearest(
-          mouseMoveEvent.clientY - segmentPosition.top,
-          30
+      .subscribe((moveEvent: TCreationEvent) => {
+        const { x, y } = this._getClientPosition(moveEvent);
+
+        const eventHeight = ceilToNearest(
+          y - segmentPosition.top,
+          this.hourSegmentHeight
         );
+        const minutesDiff =
+          (eventHeight / this.hourSegmentHeight) * SEGMENT_MINUTES;
 
         const daysDiff =
-          floorToNearest(
-            mouseMoveEvent.clientX - segmentPosition.left,
-            segmentPosition.width
-          ) / segmentPosition.width;
+          floorToNearest(x - segmentPosition.left, segmentPosition.width) /
+          segmentPosition.width;
 
         const newEnd = moment(segment.date)
           .add(minutesDiff, 'minute')
@@ -390,6 +399,12 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
   getResourceName(event: CalendarEvent): string | undefined {
     return event.meta?.calendarItem?.resource?.name;
+  }
+
+  private _getSegmentHeight(): number {
+    return this.mobileDevice
+      ? MOBILE_HOUR_SEGMENT_HEIGHT
+      : DEFAULT_HOUR_SEGMENT_HEIGHT;
   }
 
   /**
@@ -591,5 +606,37 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
     return `${this._translate.transform('reservationFor')} ${moment(
       start
     ).format('LT')} - ${moment(end).format('LT')}`;
+  }
+
+  private _createMoveEvent$(
+    until$: Observable<unknown>
+  ): Observable<TCreationEvent> {
+    return merge(
+      fromEvent<MouseEvent>(window, 'mousemove'),
+      fromEvent<TouchEvent>(window, 'touchmove', { passive: false }).pipe(
+        tap((e) => e.preventDefault())
+      )
+    ).pipe(takeUntil(until$));
+  }
+
+  private _createEndEvent$(): Observable<TCreationEvent> {
+    return merge(
+      fromEvent<MouseEvent>(window, 'mouseup'),
+      fromEvent<TouchEvent>(window, 'touchend')
+    ).pipe(first());
+  }
+  private _getClientPosition(event: TCreationEvent): { x: number; y: number } {
+    let y: number;
+    let x: number;
+
+    if ('touches' in event) {
+      y = event.touches[0].clientY;
+      x = event.touches[0].clientX;
+    } else {
+      y = event.clientY;
+      x = event.clientX;
+    }
+
+    return { x, y };
   }
 }

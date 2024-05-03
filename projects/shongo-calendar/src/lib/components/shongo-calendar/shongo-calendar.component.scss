@@ -66,6 +66,10 @@
     }
   }
 
+  &__hour-segment {
+    user-select: none;
+  }
+
   &--fill {
     @include fill;
 
