@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { delay, first, fromEvent, merge, of, takeUntil } from 'rxjs';
 
-const DEFAULT_DELAY = 100;
+const DEFAULT_DELAY = 200;
 
 @Directive({
   selector: '[delayTouchStart]',
