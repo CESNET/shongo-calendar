@@ -307,10 +307,11 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
       .subscribe((moveEvent: TCreationEvent) => {
         const { x, y } = this._getClientPosition(moveEvent);
 
-        const minutesDiff = ceilToNearest(
+        const eventHeight = ceilToNearest(
           y - segmentPosition.top,
           this.hourSegmentHeight
         );
+        const minutesDiff = (eventHeight / this.hourSegmentHeight) * 30;
 
         const daysDiff =
           floorToNearest(x - segmentPosition.left, segmentPosition.width) /
