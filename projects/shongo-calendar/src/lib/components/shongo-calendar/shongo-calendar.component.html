@@ -118,6 +118,7 @@
   <ng-template #eventTitle let-event="event" let-view="view">
     <div
       class="shongo-calendar__title"
+      [class.shongo-calendar__title--mobile]="mobileDevice"
       [attr.aria-hidden]="{} | calendarA11y : 'hideEventTitle'">
       <div
         *ngIf="getResourceName(event) as resourceName"

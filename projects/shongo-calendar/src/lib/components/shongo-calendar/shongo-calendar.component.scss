@@ -28,6 +28,12 @@
     height: 100%;
     align-content: flex-start;
     line-height: 1.1rem;
+    color: rgb(90 90 90);
+
+    &--mobile {
+      font-size: 1rem;
+      line-height: 1.2rem;
+    }
   }
 
   &__resource {
