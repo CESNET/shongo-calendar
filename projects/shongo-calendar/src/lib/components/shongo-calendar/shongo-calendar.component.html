@@ -74,6 +74,7 @@
     <div
       [hidden]="events.dragging"
       [ngClass]="'cal-tooltip-' + placement"
+      [class.shongo-calendar__tooltip--mobile]="mobileDevice"
       class="shongo-calendar__tooltip cal-tooltip">
       <div class="cal-tooltip-arrow"></div>
       <div class="cal-tooltip-inner">

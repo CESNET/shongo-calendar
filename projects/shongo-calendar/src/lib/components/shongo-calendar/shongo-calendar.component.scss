@@ -64,9 +64,17 @@
         color: var(--calendar-primary);
       }
     }
+
+    &--mobile {
+      > .cal-tooltip-inner {
+        font-size: 1rem;
+      }
+    }
   }
 
   &__event {
+    outline: blue;
+
     &--unselectable {
       @include unselectable;
     }
