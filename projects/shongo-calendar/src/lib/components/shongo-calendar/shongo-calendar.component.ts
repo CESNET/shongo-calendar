@@ -383,15 +383,23 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
    * @param event Calendar event times changed event.
    * @returns True if event times can be changed.
    */
-  validateEventTimesChanged = (
-    event: CalendarEventTimesChangedEvent
-  ): boolean => {
+  validateEventTimesChanged = ({
+    event,
+    newStart,
+    newEnd,
+  }: CalendarEventTimesChangedEvent): boolean => {
     const newSlotEvent = {
-      ...event.event,
-      start: event.newStart,
-      end: event.newEnd,
+      ...event,
+      start: newStart,
+      end: newEnd,
     };
-    return this._validateEventTimes(newSlotEvent);
+    const valid = this._validateEventTimes(newSlotEvent);
+
+    if (valid) {
+      event.title = this._buildSelectedSlotTitle(newStart, newEnd!);
+    }
+
+    return valid;
   };
 
   /**
