@@ -525,8 +525,8 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
       return (
         this._areIntervalsOverlapping(
-          { start: evt.start, end: evtEnd },
-          { start: event.start, end: eventEnd }
+          { start: event.start, end: eventEnd },
+          { start: evt.start, end: evtEnd }
         ) && sameResource
       );
     });
