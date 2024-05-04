@@ -14,6 +14,7 @@
       [hourSegmentTemplate]="hourSegment"
       [hourSegmentHeight]="hourSegmentHeight"
       [refresh]="refresh$"
+      [validateEventTimesChanged]="validateEventTimesChanged"
       (eventTimesChanged)="eventTimesChanged($event)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-day-view>
 
@@ -27,6 +28,7 @@
       [hourSegmentHeight]="hourSegmentHeight"
       [weekStartsOn]="weekStartsOn"
       [refresh]="refresh$"
+      [validateEventTimesChanged]="validateEventTimesChanged"
       (eventTimesChanged)="eventTimesChanged($event)"
       (dayHeaderClicked)="selectDate($event.day.date)"
       (eventClicked)="handleEventClick($event.event)"></mwl-calendar-week-view>

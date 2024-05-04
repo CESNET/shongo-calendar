@@ -106,6 +106,13 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   @Input() fill = true;
 
   /**
+   * Whether to allow multiple events in one cell.
+   *
+   * @default true
+   */
+  @Input() allowMultipleEventsInCell = true;
+
+  /**
    * If true, calendar will highlight all reservations that belong to the current user.
    */
   @Input()
@@ -284,19 +291,18 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
       return;
     }
 
-    const endEvent$ = this._createEndEvent$();
-    const moveEvent$ = this._createMoveEvent$(endEvent$);
-
-    const prevCreatedEvent = this._createdEvent;
-    this.isDragging$.next(true);
-
+    this._events = this._events.filter((event) => event !== this._createdEvent);
     this._createdEvent = this._createSelectedSlotEvent(segment.date);
 
-    this._events = this._events
-      .filter((event) => event !== prevCreatedEvent)
-      .concat([this._createdEvent]);
+    if (!this._validateEventTimes(this._createdEvent)) {
+      return;
+    }
+    this._events = this._events.concat([this._createdEvent]);
 
+    const endEvent$ = this._createEndEvent$();
+    const moveEvent$ = this._createMoveEvent$(endEvent$);
     const segmentPosition = segmentElement.getBoundingClientRect();
+    this.isDragging$.next(true);
 
     moveEvent$
       .pipe(
@@ -323,8 +329,9 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
           .add(minutesDiff, 'minute')
           .add(daysDiff, 'day')
           .toDate();
+        const newEndEvent = { ...this._createdEvent!, end: newEnd };
 
-        if (newEnd > segment.date) {
+        if (newEnd > segment.date && this._validateEventTimes(newEndEvent)) {
           this._createdEvent!.end = newEnd;
           this._createdEvent!.title = this._buildSelectedSlotTitle(
             this._createdEvent!.start,
@@ -370,6 +377,24 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   }
 
   /**
+   * Validates if event times can be changed.
+   * Disallows overlapping events if allowMultipleEventsInCell input is set to false.
+   *
+   * @param event Calendar event times changed event.
+   * @returns True if event times can be changed.
+   */
+  validateEventTimesChanged = (
+    event: CalendarEventTimesChangedEvent
+  ): boolean => {
+    const newSlotEvent = {
+      ...event.event,
+      start: event.newStart,
+      end: event.newEnd,
+    };
+    return this._validateEventTimes(newSlotEvent);
+  };
+
+  /**
    * Clears selected slot.
    */
   clearSelectedSlot(): void {
@@ -399,6 +424,13 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
   getResourceName(event: CalendarEvent): string | undefined {
     return event.meta?.calendarItem?.resource?.name;
+  }
+
+  private _validateEventTimes(event: CalendarEvent): boolean {
+    if (this.allowMultipleEventsInCell) {
+      return true;
+    }
+    return !this._eventOverlapsSomeEvent(event);
   }
 
   private _getSegmentHeight(): number {
@@ -437,6 +469,59 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
       subInterval.start >= superInterval.start &&
       subInterval.end <= superInterval.end
     );
+  }
+
+  /**
+   * Checks if two intervals are overlapping.
+   *
+   * @param intervalOne First interval.
+   * @param intervalTwo Second interval.
+   * @returns True if intervals are overlapping.
+   */
+  private _areIntervalsOverlapping(
+    intervalOne: IInterval,
+    intervalTwo: IInterval
+  ): boolean {
+    const startInside =
+      intervalOne.start >= intervalTwo.start &&
+      intervalOne.start < intervalTwo.end;
+    const endInside =
+      intervalOne.end > intervalTwo.start && intervalOne.end <= intervalTwo.end;
+
+    return startInside || endInside;
+  }
+
+  /**
+   * Checks if event overlaps some other event.
+   *
+   * @param event Event to check.
+   * @returns True if event overlaps some other event.
+   */
+  private _eventOverlapsSomeEvent(event: CalendarEvent): boolean {
+    return this._events.some((evt) => {
+      if (evt === this._createdEvent) {
+        return false;
+      }
+
+      const evtEnd =
+        evt.end || moment(evt.start).add(SEGMENT_MINUTES, 'minutes').toDate();
+      const eventEnd =
+        event.end ||
+        moment(event.start).add(SEGMENT_MINUTES, 'minutes').toDate();
+
+      const [evtResId, eventResId] = [
+        evt.meta?.calendarItem?.resource?.id,
+        event.meta?.calendarItem?.resource?.id,
+      ];
+      const sameResource = evtResId === eventResId;
+
+      return (
+        this._areIntervalsOverlapping(
+          { start: evt.start, end: evtEnd },
+          { start: event.start, end: eventEnd }
+        ) && sameResource
+      );
+    });
   }
 
   /**
