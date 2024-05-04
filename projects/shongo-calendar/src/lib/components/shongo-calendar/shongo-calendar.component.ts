@@ -106,11 +106,11 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   @Input() fill = true;
 
   /**
-   * Whether to allow multiple events in one cell.
+   * Whether to allow overlapping events with the same resource.
    *
    * @default true
    */
-  @Input() allowMultipleEventsInCell = true;
+  @Input() allowOverlappingEvents = true;
 
   /**
    * If true, calendar will highlight all reservations that belong to the current user.
@@ -378,7 +378,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
   /**
    * Validates if event times can be changed.
-   * Disallows overlapping events if allowMultipleEventsInCell input is set to false.
+   * Disallows overlapping events if allowOverlappingEvents input is set to false.
    *
    * @param event Calendar event times changed event.
    * @returns True if event times can be changed.
@@ -435,7 +435,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   }
 
   private _validateEventTimes(event: CalendarEvent): boolean {
-    if (this.allowMultipleEventsInCell) {
+    if (this.allowOverlappingEvents) {
       return true;
     }
     return !this._eventOverlapsSomeEvent(event);
