@@ -490,13 +490,9 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
     intervalOne: IInterval,
     intervalTwo: IInterval
   ): boolean {
-    const startInside =
-      intervalOne.start >= intervalTwo.start &&
-      intervalOne.start < intervalTwo.end;
-    const endInside =
-      intervalOne.end > intervalTwo.start && intervalOne.end <= intervalTwo.end;
-
-    return startInside || endInside;
+    return (
+      intervalOne.start < intervalTwo.end && intervalOne.end > intervalTwo.start
+    );
   }
 
   /**
