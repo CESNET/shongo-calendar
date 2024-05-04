@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   EventEmitter,
   Inject,
   Input,
@@ -12,6 +13,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   CalendarEvent,
   CalendarEventTimesChangedEvent,
@@ -226,7 +228,8 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
   constructor(
     @Inject(LOCALE_ID) public locale: string,
     private _cd: ChangeDetectorRef,
-    private _translate: TranslationPipe
+    private _translate: TranslationPipe,
+    private _destroyRef: DestroyRef
   ) {}
 
   ngOnInit(): void {
@@ -306,6 +309,7 @@ export class ShongoCalendarComponent implements OnInit, OnChanges {
 
     moveEvent$
       .pipe(
+        takeUntilDestroyed(this._destroyRef),
         finalize(() => {
           this.slotSelected.emit(this.selectedSlot);
           this.isDragging$.next(false);
