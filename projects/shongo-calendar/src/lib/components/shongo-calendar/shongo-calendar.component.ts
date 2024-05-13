@@ -1,3 +1,4 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -48,6 +49,15 @@ const SEGMENT_MINUTES = 30;
   styleUrls: ['./shongo-calendar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  animations: [
+    trigger('loading', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease', style({ opacity: 1 })),
+      ]),
+      transition(':leave', animate('200ms ease', style({ opacity: 0 }))),
+    ]),
+  ],
 })
 export class ShongoCalendarComponent implements OnInit, OnChanges {
   /**

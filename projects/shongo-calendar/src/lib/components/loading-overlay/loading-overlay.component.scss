@@ -1,4 +1,4 @@
-.loading-overlay {
+:host {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,13 +12,15 @@
   );
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 999;
+}
 
+.loading-overlay {
   &__spinner {
     position: absolute;
     width: 5rem;
     height: 5rem;
-    z-index: 2;
+    z-index: 1000;
 
     > div {
       box-sizing: border-box;

@@ -1,10 +1,11 @@
-<ng-container *ngIf="{ dragging: isDragging$ | async } as events">
+<div
+  class="shongo-calendar"
+  *ngIf="{ dragging: isDragging$ | async } as events">
+  <div @loading loading-overlay *ngIf="loading"></div>
   <div
     [ngSwitch]="view"
-    class="shongo-calendar"
+    class="shongo-calendar__container"
     [class.shongo-calendar--fill]="fill">
-    <loading-overlay *ngIf="loading"></loading-overlay>
-
     <mwl-calendar-day-view
       *ngSwitchCase="CalendarView.Day"
       [viewDate]="viewDate"
@@ -200,4 +201,4 @@
   <ng-template #unknownOwner>
     <span>{{ 'unknown' | translate }}</span>
   </ng-template>
-</ng-container>
+</div>

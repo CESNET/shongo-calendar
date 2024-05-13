@@ -19,6 +19,15 @@
   --calendar-primary: var(--shongo-calendar-primary, rgb(0 200 83));
 
   position: relative;
+  height: 100%;
+  width: 100%;
+
+  &__container {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 
   &__title {
     @include unselectable;
