@@ -1,4 +1,5 @@
 export * from './calendar-event-meta.interface';
+export * from './calendar-i18n.interface';
 export * from './calendar-item.interface';
 export * from './calendar-translations.interface';
 export * from './event-owner.interface';

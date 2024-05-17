@@ -1,6 +1,6 @@
 {
   "name": "@cesnet/shongo-calendar",
-  "version": "16.3.3",
+  "version": "16.4.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/CESNET/shongo-calendar"
