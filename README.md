@@ -16,7 +16,19 @@ Shongo Calendar is a library built on top of [Angular Calendar](https://github.c
 
 - This library is published on GitHub npm registry, to access it, add this line to your `.npmrc` file at the root of the project: `@cesnet:registry=https://npm.pkg.github.com`
 - You can add this library as a dependency to your project, by running `npm install @cesnet/shongo-calendar`.
-- You might be required to log-in to GitHub npm, see [Working with the npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
+- You might be required to log in to the GitHub npm, see next section or [Working with the npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
+
+## GitHub NPM registry log-in
+
+You have to generate a personal access token with access to **read packages** in **Settings -> Developer settings -> Tokens**.
+
+Then you can log in like this:
+```
+$ npm login --scope=@cesnet --auth-type=legacy --registry=https://npm.pkg.github.com
+
+> Username: USERNAME
+> Password: TOKEN
+```
 
 ## Build
 
